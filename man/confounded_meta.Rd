@@ -82,3 +82,4 @@ confounded_meta( q=log(0.90), r=0.20,
                  yr=yr, t2=t2, CI.level=0.95 )
 }
 \keyword{meta-analysis}
+\keyword{stats}

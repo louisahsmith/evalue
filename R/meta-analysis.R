@@ -31,7 +31,6 @@
 #' can be left \code{NA}. To compute inference for all point estimates, \code{vyr} and 
 #' \code{vt2} must be supplied. 
 #' @keywords meta-analysis
-#' @import metafor
 #' stats 
 #' @examples
 #' d = metafor::escalc(measure="RR", ai=tpos, bi=tneg,
@@ -243,7 +242,6 @@ confounded_meta = function( q, r=NA, muB=NA, sigB=0,
 #' Tables for \code{Gmin} will display \code{NaN} for cells corresponding to \code{Tmin}<1,
 #' i.e., for which no bias is required to reduce the effects as specified. 
 #' @keywords meta-analysis
-#' @import ggplot2 
 #' @examples
 #' sens_table( meas="prop", q=log(1.1), muB=c( log(1.1),
 #' log(1.5), log(2.0) ), sigB=c(0, 0.1, 0.2), 
@@ -344,7 +342,6 @@ sens_table = function( meas, q, r=seq(0.1, 0.9, 0.1), muB=NA, sigB=NA,
 #' Arguments \code{vyr} and \code{vt2} can be left \code{NA}, in which case no confidence
 #' band will appear on the line plot. 
 #' @export
-#' @import ggplot2 
 #' @examples
 #' # with variable bias and with confidence band
 #' sens_plot( type="line", q=log(1.1), Bmin=log(1), Bmax=log(4), sigB=0.1,
