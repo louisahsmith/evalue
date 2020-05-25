@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Multiple-bias sensitivity analysis</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Multiple-bias sensitivity analysis</h1>
+
+
+
+<div id="biases" class="section level2">
+<h2>Biases</h2>
+<p>It is likely that an epidemiologic study is affected by more than one bias. We can use the <code>EValue</code> package to assess biases jointly. We start by characterizing the biases of interest: unmeasured confounding, selection bias, and differential misclassification. Functions allow us to characterize these biases according to the available options.</p>
+<ul>
+<li><code>confounding()</code>
+<ul>
+<li>This function does not need any additional arguments.</li>
+</ul></li>
+<li><code>selection(...)</code>
+<ul>
+<li>Selection bias can be described by <code>&quot;general&quot;</code> if the inferential goal is the total population, and by <code>&quot;selected&quot;</code> if the target is the selected population only. If <code>&quot;general&quot;</code>, the default, is chosen, additional arguments are <code>&quot;increased risk&quot;</code> or <code>&quot;decreased risk&quot;</code> (assumptions about the direction of risk in the selected population) and <code>&quot;S = U&quot;</code> (simplification used if the biasing characteristic is common to the entire selected population). See <a href="selection-bias.html">selection bias</a> for more details on the interpretation of these options.</li>
+</ul></li>
+<li><code>misclassification(...)</code>
+<ul>
+<li>Misclassification can be characterized by <code>&quot;outcome&quot;</code> or <code>&quot;exposure&quot;</code> depending on whether differential outcome or exposure misclassification is of interest. If <code>&quot;exposure&quot;</code> is chosen, additional arguments <code>rare_outcome</code> and <code>rare_exposure</code> must be set to <code>TRUE</code> or <code>FALSE</code>, depending on whether the outcome and/or exposure are rare enough for odds ratios to be approximately equivalent to risk ratios.</li>
+</ul></li>
+</ul>
+<p>Each bias additional takes the argument <code>verbose</code>, which specifies if any messages should be printed to the console when calling the function. This argument should generally be unspecified (default <code>verbose = FALSE</code>) as the appropriate messages will be printed when using the biases in other functions, but may occasionally be helpful for debugging.</p>
+<p>To use the sensitivity analysis functions provided in this package, these biases can be combined using <code>multi_bias()</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>biases &lt;-<span class="st"> </span><span class="kw">multi_bias</span>(<span class="kw">confounding</span>(), </span>
+<span id="cb1-2"><a href="#cb1-2"></a>                     <span class="kw">selection</span>(<span class="st">&quot;general&quot;</span>, <span class="st">&quot;increased risk&quot;</span>), </span>
+<span id="cb1-3"><a href="#cb1-3"></a>                     <span class="kw">misclassification</span>(<span class="st">&quot;exposure&quot;</span>, <span class="dt">rare_outcome =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
+<div id="parameters-describing-the-biases" class="section level3">
+<h3>Parameters describing the biases</h3>
+<p>There are 1-4 parameters that characterize each bias, but they differ depending on the ordering of the biases and on the options chosen. The interpretation of the parameters is given in <a href="https://arxiv.org/abs/2005.02908">Smith et al. 2020</a>, but briefly, each is a risk (or odds) ratio (RR/OR) relating two variables, possibly conditional on others. (Each is additionally conditional on other measured covariates, omitted from the notation for simplicity.) The exposure variable is labeled <span class="math inline">\(A\)</span>, the outcome <span class="math inline">\(Y\)</span>, and their misclassified versions <span class="math inline">\(A^*\)</span> and <span class="math inline">\(Y^*\)</span>, respectively. Selection into the sample is denoted with <span class="math inline">\(S = 1\)</span>. Finally, unmeasured confounding and selection bias are assumed to be due to unmeasured variables <span class="math inline">\(U_c\)</span> and <span class="math inline">\(U_s\)</span>, respectively.</p>
+<p>The table below contains the entire list of parameters using the notation in the Smith et al. paper. The corresponding output that will be printed in the R console is also given. Finally, the argument used to specify the magnitude of the parameter in the <code>multi_bound()</code> function is in the last column.</p>
+<button title="Click to show or hide table" type="button" onclick="if(document.getElementById(&#39;outputtab&#39;) .style.display==&#39;none&#39;) {document.getElementById(&#39;outputtab&#39;) .style.display=&#39;&#39;}else{document.getElementById(&#39;outputtab&#39;) .style.display=&#39;none&#39;}">
+Hide (show) table
+</button>
+<p><br></p>
+<div id="outputtab">
+<table>
+<thead>
+<tr class="header">
+<th align="left">bias</th>
+<th align="left">latex</th>
+<th align="left">output</th>
+<th align="left">argument</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">confounding</td>
+<td align="left"><span class="math display">\[\text{RR}_{AU_c}\]</span></td>
+<td align="left"><code>RR_AUc</code></td>
+<td align="left"><code>RRAUc</code></td>
+</tr>
+<tr class="even">
+<td align="left">confounding</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_cY}\]</span></td>
+<td align="left"><code>RR_UcY</code></td>
+<td align="left"><code>RRUcY</code></td>
+</tr>
+<tr class="odd">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY \mid A = 1}\]</span></td>
+<td align="left"><code>RR_UsY|A=1</code></td>
+<td align="left"><code>RRUsYA1</code></td>
+</tr>
+<tr class="even">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{SU_s \mid A = 1}\]</span></td>
+<td align="left"><code>RR_SUs|A=1</code></td>
+<td align="left"><code>RRSUsA1</code></td>
+</tr>
+<tr class="odd">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY \mid A = 0}\]</span></td>
+<td align="left"><code>RR_UsY|A=0</code></td>
+<td align="left"><code>RRUsYA0</code></td>
+</tr>
+<tr class="even">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{SU_s \mid A = 0}\]</span></td>
+<td align="left"><code>RR_SUs|A=0</code></td>
+<td align="left"><code>RRSUsA0</code></td>
+</tr>
+<tr class="odd">
+<td align="left">selection after exposure misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY^* \mid A = 1}\]</span></td>
+<td align="left"><code>RR_UsY*|A=1</code></td>
+<td align="left"><code>RRUsYA1</code></td>
+</tr>
+<tr class="even">
+<td align="left">selection after exposure misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY^* \mid A = 0}\]</span></td>
+<td align="left"><code>RR_UsY*|A=0</code></td>
+<td align="left"><code>RRUsYA0</code></td>
+</tr>
+<tr class="odd">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY \mid A^* = 1}\]</span></td>
+<td align="left"><code>RR_UsY|A*=1</code></td>
+<td align="left"><code>RRUsYA1</code></td>
+</tr>
+<tr class="even">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{SU_s \mid A^* = 1}\]</span></td>
+<td align="left"><code>RR_SUs|A*=1</code></td>
+<td align="left"><code>RRSUsA1</code></td>
+</tr>
+<tr class="odd">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_sY \mid A^* = 0}\]</span></td>
+<td align="left"><code>RR_UsY|A*=0</code></td>
+<td align="left"><code>RRUsYA0</code></td>
+</tr>
+<tr class="even">
+<td align="left">selection after outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{SU_s \mid A^* = 0}\]</span></td>
+<td align="left"><code>RR_SUs|A*=1</code></td>
+<td align="left"><code>RRSUsA1</code></td>
+</tr>
+<tr class="odd">
+<td align="left">confounding and selection</td>
+<td align="left"><span class="math display">\[\text{RR}_{AU_{sc}\mid S = 1}\]</span></td>
+<td align="left"><code>RR_AUsc|S</code></td>
+<td align="left"><code>RRAUscS</code></td>
+</tr>
+<tr class="even">
+<td align="left">confounding and selection</td>
+<td align="left"><span class="math display">\[\text{RR}_{U_{sc}Y\mid S = 1}\]</span></td>
+<td align="left"><code>RR_UscY|S</code></td>
+<td align="left"><code>RRUscYS</code></td>
+</tr>
+<tr class="odd">
+<td align="left">outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{AY^* \mid y}\]</span></td>
+<td align="left"><code>RR_AY*|y</code></td>
+<td align="left"><code>RRAYy</code></td>
+</tr>
+<tr class="even">
+<td align="left">exposure misclassification (rare outcome)</td>
+<td align="left"><span class="math display">\[\text{OR}_{YA^* \mid a}\]</span></td>
+<td align="left"><code>OR_YA*|a</code></td>
+<td align="left"><code>ORYAa</code></td>
+</tr>
+<tr class="odd">
+<td align="left">exposure misclassification (rare exposure and outcome)</td>
+<td align="left"><span class="math display">\[\text{RR}_{YA^* \mid a}\]</span></td>
+<td align="left"><code>RR_YA*|a</code></td>
+<td align="left"><code>RRYAa</code></td>
+</tr>
+<tr class="even">
+<td align="left">outcome misclassification</td>
+<td align="left"><span class="math display">\[\text{RR}_{AY^* \mid y, S = 1}\]</span></td>
+<td align="left"><code>RR_AY*|y,S</code></td>
+<td align="left"><code>RRAYyS</code></td>
+</tr>
+<tr class="odd">
+<td align="left">exposure misclassification (rare outcome)</td>
+<td align="left"><span class="math display">\[\text{OR}_{YA^* \mid a, S = 1}\]</span></td>
+<td align="left"><code>OR_YA*|a,S</code></td>
+<td align="left"><code>ORYAaS</code></td>
+</tr>
+<tr class="even">
+<td align="left">exposure misclassification (rare exposure and outcome)</td>
+<td align="left"><span class="math display">\[\text{RR}_{YA^* \mid a, S = 1}\]</span></td>
+<td align="left"><code>RR_YA*|a,S</code></td>
+<td align="left"><code>RRYAaS</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ordering-of-the-biases" class="section level3">
+<h3>Ordering of the biases</h3>
+<p>If both present, selection bias and misclassification should be listed in the <code>multi_bias()</code> function in the order in which they are assumed to affect the data. Confounding is assumed to be a state of nature that does not depend on how the data is selected or measured. If selection occurs before the exposure/outcome measurement, as is implied in the code above, then we can define parameters that describe the extent of differential misclassification within the selected group. If measurement takes place before selection, then the parameters describing selection are in terms of the misclassified variables.</p>
+<p>We can easily see which parameters describe the biases of interest using the <code>summary()</code> function on the object created by <code>multi-bias()</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">summary</span>(biases)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="co">#&gt;                         bias     output argument</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co">#&gt; 1                confounding     RR_AUc    RRAUc</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co">#&gt; 2                confounding     RR_UcY    RRUcY</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co">#&gt; 3                  selection RR_UsY|A=1  RRUsYA1</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co">#&gt; 4                  selection RR_SUs|A=1  RRSUsA1</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co">#&gt; 5 exposure misclassification OR_YA*|a,S   ORYAaS</span></span></code></pre></div>
+<p>Contrast the above parameters with those we would get if we switched the ordering of the misclassification and the selection. These now imply that selection differs on the basis of the mismeasured exposure, and that the misclassification parameter can be interpreted with respect to the total population, not just those selected for the study.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">summary</span>(</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  <span class="kw">multi_bias</span>(<span class="kw">confounding</span>(), </span>
+<span id="cb3-3"><a href="#cb3-3"></a>             <span class="kw">misclassification</span>(<span class="st">&quot;exposure&quot;</span>, <span class="dt">rare_outcome =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb3-4"><a href="#cb3-4"></a>             <span class="kw">selection</span>(<span class="st">&quot;general&quot;</span>, <span class="st">&quot;increased risk&quot;</span>))</span>
+<span id="cb3-5"><a href="#cb3-5"></a>  )</span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">#&gt;                         bias      output argument</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#&gt; 1                confounding      RR_AUc    RRAUc</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&gt; 2                confounding      RR_UcY    RRUcY</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&gt; 3                  selection RR_UsY|A*=1  RRUsYA1</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">#&gt; 4                  selection RR_SUs|A*=1  RRSUsA1</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">#&gt; 5 exposure misclassification    OR_YA*|a    ORYAa</span></span></code></pre></div>
+</div>
+</div>
+<div id="bounds" class="section level2">
+<h2>Bounds</h2>
+<p>Once we know which biases are of interest and have characterized them using the function arguments, we can calculate a bound for the joint bias. We must choose values for the various parameters defining the magnitude of the biases.</p>
+<p>Calculating a bound does not require memorizing the arguments in the above table. Instead, the parameters that need to be specified for a given set of biases can be printed using the <code>print()</code> function on an object created by <code>multi_bias()</code>. For example, using the biases chosen above:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">print</span>(biases)</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="co">#&gt; The following arguments can be copied and pasted into the multi_bound() function:</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">#&gt; RRAUc = , RRUcY = , RRUsYA1 = , RRSUsA1 = , ORYAaS  =</span></span></code></pre></div>
+<p>We can then choose values for the necessary parameters. For our example, suppose we think that an unmeasured confounder <span class="math inline">\(U_c\)</span> is associated with a 2-fold increased risk of the outcome and is 1.5 times as likely within the exposed compared to the unexposed groups. Then <code>RRUcY = 2</code> and <code>RRAUc = 1.5</code>. Then we believe that, among the exposed, the selected group is 1.25 times as likely to have some level of unmeasured variable <span class="math inline">\(U_s\)</span> than the non-selected group, and that <span class="math inline">\(U_s\)</span> is associated with a 2.5-fold increase in the risk of the outcome. This would imply that <code>RRSUsA1 = 1.25</code> and <code>RRUsYA1 = 2.5</code>. Finally, we hypothesize that the odds of a false-positive exposure measurement within this selected group were 1.75 times higher in the exposed than unexposed, so that <code>ORYAaS = 1.75</code>. We can calculate the maximum bias we would see if all those parameters described the true extent of the bias:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">multi_bound</span>(biases, </span>
+<span id="cb5-2"><a href="#cb5-2"></a>            <span class="dt">RRUcY =</span> <span class="dv">2</span>, <span class="dt">RRAUc =</span> <span class="fl">1.5</span>,</span>
+<span id="cb5-3"><a href="#cb5-3"></a>            <span class="dt">RRSUsA1 =</span> <span class="fl">1.25</span>, <span class="dt">RRUsYA1 =</span> <span class="fl">2.5</span>,</span>
+<span id="cb5-4"><a href="#cb5-4"></a>            <span class="dt">ORYAaS =</span> <span class="fl">1.75</span>)</span></code></pre></div>
+<p>That is, if those values are correct, then the true risk ratio can be no more than 2.4 times smaller than the observed risk ratio. So if our observed risk ratio were 4, the true risk ratio must be at least 1.7.</p>
+<p>If you don’t include the necessary parameter arguments given your biases of interest, an error will inform you which are necessary. Values of 1 imply no bias, so arguments set equal to 1 can be used to explore the absence of a certain bias.</p>
+<p>Because we generally don’t know the exact magnitude of the parameters, it can be useful to calculate bounds with a range of values. For example, we can vary each of the parameters from 1 to 3 in increments of 0.25:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>param_vals &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dt">by =</span> <span class="fl">0.25</span>)</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co"># create every combination of values</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>params &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(</span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="dt">RRUcY =</span> param_vals, <span class="dt">RRAUc =</span> param_vals,</span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="dt">RRSUsA1 =</span> param_vals, <span class="dt">RRUsYA1 =</span> param_vals,</span>
+<span id="cb6-7"><a href="#cb6-7"></a>  <span class="dt">ORYAaS =</span> param_vals</span>
+<span id="cb6-8"><a href="#cb6-8"></a>)</span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a>params<span class="op">$</span>bound &lt;-<span class="st"> </span><span class="kw">mapply</span>(multi_bound,</span>
+<span id="cb6-11"><a href="#cb6-11"></a>  <span class="dt">RRUcY =</span> params<span class="op">$</span>RRUcY, <span class="dt">RRAUc =</span> params<span class="op">$</span>RRAUc,</span>
+<span id="cb6-12"><a href="#cb6-12"></a>  <span class="dt">RRSUsA1 =</span> params<span class="op">$</span>RRSUsA1, <span class="dt">RRUsYA1 =</span> params<span class="op">$</span>RRUsYA1,</span>
+<span id="cb6-13"><a href="#cb6-13"></a>  <span class="dt">ORYAaS =</span> params<span class="op">$</span>ORYAaS,</span>
+<span id="cb6-14"><a href="#cb6-14"></a>  <span class="dt">MoreArgs =</span> <span class="kw">list</span>(<span class="dt">biases =</span> biases)</span>
+<span id="cb6-15"><a href="#cb6-15"></a>)</span></code></pre></div>
+<p>There are two many dimensions to summarize the relationship between the parameters and the bounds in a simple table or figure, but we can examine the overall distribution of the bounds as well as how they depend on several of the parameters. For example, a simple histogram of the bounds calculated by varying each of the bias parameters between 1 and 3.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">hist</span>(params<span class="op">$</span>bound, <span class="dt">main =</span> <span class="ot">NULL</span>, <span class="dt">xlab =</span> <span class="st">&quot;Bound&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAYAAAAUg66AAAAEGWlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPrtzZyMkzlNsNIV0qD8NJQ2TVjShtLp/3d02bpZJNtoi6GT27s6Yyc44M7v9oU9FUHwx6psUxL+3gCAo9Q/bPrQvlQol2tQgKD60+INQ6Ium65k7M5lpurHeZe58853vnnvuuWfvBei5qliWkRQBFpquLRcy4nOHj4g9K5CEh6AXBqFXUR0rXalMAjZPC3e1W99Dwntf2dXd/p+tt0YdFSBxH2Kz5qgLiI8B8KdVy3YBevqRHz/qWh72Yui3MUDEL3q44WPXw3M+fo1pZuQs4tOIBVVTaoiXEI/MxfhGDPsxsNZfoE1q66ro5aJim3XdoLFw72H+n23BaIXzbcOnz5mfPoTvYVz7KzUl5+FRxEuqkp9G/Ajia219thzg25abkRE/BpDc3pqvphHvRFys2weqvp+krbWKIX7nhDbzLOItiM8358pTwdirqpPFnMF2xLc1WvLyOwTAibpbmvHHcvttU57y5+XqNZrLe3lE/Pq8eUj2fXKfOe3pfOjzhJYtB/yll5SDFcSDiH+hRkH25+L+sdxKEAMZahrlSX8ukqMOWy/jXW2m6M9LDBc31B9LFuv6gVKg/0Szi3KAr1kGq1GMjU/aLbnq6/lRxc4XfJ98hTargX++DbMJBSiYMIe9Ck1YAxFkKEAG3xbYaKmDDgYyFK0UGYpfoWYXG+fAPPI6tJnNwb7ClP7IyF+D+bjOtCpkhz6CFrIa/I6sFtNl8auFXGMTP34sNwI/JhkgEtmDz14ySfaRcTIBInmKPE32kxyyE2Tv+thKbEVePDfW/byMM1Kmm0XdObS7oGD/MypMXFPXrCwOtoYjyyn7BV29/MZfsVzpLDdRtuIZnbpXzvlf+ev8MvYr/Gqk4H/kV/G3csdazLuyTMPsbFhzd1UabQbjFvDRmcWJxR3zcfHkVw9GfpbJmeev9F08WW8uDkaslwX6avlWGU6NRKz0g/SHtCy9J30o/ca9zX3Kfc19zn3BXQKRO8ud477hLnAfc1/G9mrzGlrfexZ5GLdn6ZZrrEohI2wVHhZywjbhUWEy8icMCGNCUdiBlq3r+xafL549HQ5jH+an+1y+LlYBifuxAvRN/lVVVOlwlCkdVm9NOL5BE4wkQ2SMlDZU97hX86EilU/lUmkQUztTE6mx1EEPh7OmdqBtAvv8HdWpbrJS6tJj3n0CWdM6busNzRV3S9KTYhqvNiqWmuroiKgYhshMjmhTh9ptWhsF7970j/SbMrsPE1suR5z7DMC+P/Hs+y7ijrQAlhyAgccjbhjPygfeBTjzhNqy28EdkUh8C+DU9+z2v/oyeH791OncxHOs5y2AtTc7nb/f73TWPkD/qwBnjX8BoJ98VQNcC+8AAAA4ZVhJZk1NACoAAAAIAAGHaQAEAAAAAQAAABoAAAAAAAKgAgAEAAAAAQAAASCgAwAEAAAAAQAAASAAAAAAq0AljQAAIv5JREFUeAHtnQvYTVUax1+UEJL7PRKV+10ZJdEgBpGYYjJoVDKEjMJTEk1DM2RG0TDxRNMFM8hDLkmlcusiIrl8jNzvcsllz/6vmXOec75v77PPd75z9lrnnP96nsM+e+2917t+a5//t+5vLssOwkACJEACGgjk1pAmkyQBEiABRYACxBeBBEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESIACxHeABEhAGwEKkDb0TJgESOAqIjCTwL59++TEiROuxp08eVLGjRsnBQsWdL3muuuuk4kTJ0r+/Pldr2EECegkQAHSSd8l7YMHD0r58uWlevXqLleIbNmyRRo3biw9evRwvebFF1+UtWvXSvPmzV2vYQQJ6CRAAdJJ3yXtM2fOyI033iibN292uUKkQ4cOglpS9+7dXa959dVXXeMYQQImEGAfkAmlQBtIIE0JUIDStOCZbRIwgQAFyIRSoA0kkKYE2AeUwgV/+vRpmTBhgrzzzjuOubQsS1q1aiWdO3d2jOdJEkg0AQpQJsIYXfrggw8ync369csvv5QhQ4ZI7dq1s0YacuaHH36Q+vXru46mXbp0SR544AHB/wwkoIMABSgTdYxAZWRkZDqb9StEqlOnTkYLUO7cuaVWrVrSv3//rBmwz2Ce0bPPPusYx5Mk4AcBClAmyphbg49X+Pzzz6VMmTJelzGeBEggAgF2QkeAwygSIIHEEqAAJZYvn04CJBCBAAUoAhxGkQAJJJYA+4ASy9fx6Vu3bpX33nvPMQ4njx07Jj///LNrPCNIIFUIsAakoSQxdL9hwwY5f/6842f79u3yn//8R4NlTJIE/CXgWQP6+OOPZd68edKrVy+pU6eOv9alaGrVqlWTMWPGSM2aNR1zuHLlSlmyZIljHE+SQCoR8KwBFSlSRJYuXSp169ZVH+wvc/jw4VRiwLyQAAloIuApQJjIhtnB69atkzvvvFPGjh0r5cqVU5Pw5s+fLxcvXtRkOpMlARJIdgKeAhTIYMOGDeWVV16RH3/8UTXJihUrppplZcuWlUGDBgk6VhlIgARIIDsEohagwEP37NkjWAe1ceNGOXXqlNo464svvlDrjUaNGhW4jP+TAAmQgCcBz05oPOHIkSPy9ttvy5tvvilYglCqVCnp2bOn+l6jRg2VyLvvvqsWNt53331qAaRnyryABEgg7Ql4CtDq1avVlg0g1b59e1mwYIG0bdtWrroq/NZ7771XwcR+xgwkQAIkEA2BcBVxuKNAgQLypz/9SR566CEpUaKEwxX/O3XNNdfIgQMHVO3I9SJGkAAJkEAIAc8+IHQ+Dxw4UJYtWyY7d+4M3vr444+HdTyjRoSmGQMJkAAJREvAswaEB7Vu3VpWrVqlPvDWgJ30vv76azWRDjvuYRSMITkJXLlyRQ0qRLIe/Xx58+aNdAnjSCAmAp4ChGUBH330kXz77beCGbwIuXLlkk8//VQNyz/99NOC2hBf0Jj4a73pp59+Emzb2rt3b1c7vvrqKxk+fLjAxxgDCcSbgKcArVixQtAMC4hPqAFwiofmGYbmb7rpptAoHicBgcBWrJhW4RZmzpwpWBrCQAKJIODZB3TLLbco75p79+7Nkv6iRYskT548amZ0lkieIAESIAEPAp4CdNttt0np0qXVvB/8JcQqbWx2/tZbb8nIkSOla9eu9D3uAZnRJEACzgQ8m2D58uWTNWvWSLt27aRly5ZhT7n//vtlypQpYef4hQRIgASiJeApQHhQhQoV5JtvvlG1H3RKotmFplnlypWjTYfXkQAJkEAWAlEJUOCu8uXLCz6pHDZt2iSLFy/2zOK+ffu4LYknJV5AApEJRCVAaIJhHyD0/zhtFbp+/frIqSRRLPJ3/PhxT4svX74smEPDQAIkEDsBTwHC6FebNm3kuuuuk9tvv10KFy4ce2pJcGeDBg0EH6+AuVGc+e1FifEkEJmApwBhHhA8bKIP6Prrr4/8NMaSAAmQQDYIeA7DY9kF+n0oPtmgyktJgASiIuApQC1atFCLUDdv3hzVA3kRCZAACURLwLMJhnlADz74oDRv3ly6deumakMYhg8Nw4YNC/3KYxIgARKIioCnAGHVO3Y7RMCOiE6BAuREJTXOYb0Ytt+NtOMBmucjRozIskldahBgLhJJwFOAsBXHyZMnE2lDjp6NPipsGYtaWdGiRXP0LN6clQC24D169KhUqlQpa+T/z+APFLyndO7c2fUaRpCAEwFPAQq9Cds37NixQ21Ef/XVVwt2QdQRMAkQHjqwTzWOA6u6MUUAP5RWrVrJ6NGjpWDBgjrMS7k08+fPH7EGhG17GUggFgJRCRAmIKIKPnfuXJUGvGDMmTNHVbmff/55wbatfoWMjAxp1qyZ2pMIC2GxQRpqPtijCD7Vd+3apfyuw1ZMIahSpYpfpjEdEiCBbBLwFCDMDO7QoYOqZfzlL39RbX2kcccdd0ifPn2Ua55p06ZlM9nYLx8/fryq5Sxfvty1BjZu3Di1cf6sWbNUTSj21HgnCZBAIgl4DsPjh45mDnzEoxYU8IbRpUsX1TmNPYHQD+NXwGLY3/zmN67iAzvQPOzVqxf9q/tVKEyHBGIk4ClA2JIVewJjKUbm0KhRI9m/f7/s3r07c1TCvjdt2lRtB+uVAPYuggtpBhIgAXMJeDbBsOUG9n8+fPhwFrc8//znP1WNyM8fOuYkQYTgfwyugtDHAzfRWC6CPiCI4ezZs9WKdtTeGEiABMwl4ClAd999t5p8CMeDgwcPVivAUStauHChvPbaa2qSop8b0tetW1etS+vXr588/PDDjivSMQr2wQcfqMmT5qKnZSRAAp4ChKHs+fPnqz4V1D4QsBk9QqdOnWTSpEnq2M9/sAE+RrjQQY4N8VHruXjxopQtW1aJJWpEDCRAAuYT8BQgZKF27dqCPX82bNggqP2gxoN+oVtvvVVrDmEHmmDon+JERK1FwcRJICYCUQkQnow+FnQ646M7cCKi7hJg+iQQHwKeAoSp+HBMFymssr2m+hU4EdEv0kyHBBJPwFOAsNyiTJkyYZacOnVK+YUPzJAOi0zwF05ETDBgPp4EfCTgKUD16tVTPsAy24TJhwMGDFCdwJnjEvkdExEx+hVpHVpgIuLkyZN9nwmNGiO2rs0s2qFMDh06ZPQC31BbeUwCiSTgKUBuiWPt1dChQ5VL5tdff923hZ+BiYiPPPKIm2nqvK6JiJieMGrUKHn00Udd7cPcKogQAwmkO4GYBQjgMBkQ3iGwXYdfK8+TYSIiameYEuAWIN4MJEACIp4ChDk2CxYsCGMF0cGsY9R84KDQz5nQiZ6IiA3YMuc3LPP//4L+L9ZinMjwHAlET8BTgLZs2SJPPfVUlidee+21AjHQPRERo2IQDfjouvnmm3M8ERHPwaRGr+DnAlwvWxhPAslKwFOAsATjwoULRuUvkfOA0OmOj1dYtmyZlCxZ0usyxpMACUQg4ClAEe7VEsV5QFqwR0wUTXJsBIcRSrdQunRpwYeBBEIJeApQNBMRQx84Y8YMtUth6Ll4HnMeUDxpxudZgX6zOnXquD4Q10CoMKOegQQCBDzfBng8wJ7A2PcX82vwkpUoUUL1u8A9MV4ozHkJfAIblgUSiPf/3JAs3kRz/jwsCkY/IcrG7YP3hP1mOWedak/wrAFheB0vFfbWwdYcgYC/Zk888YRs2rTJcaJi4Lp4/2/6PKB455fPI4FUJuApQNhXB52yoeIDIFh9PnLkSDXqhF0RI838jSfAZJgHFM/88lkkkMoEPAUIrm7Wrl0rZ86cyTLZ8MCBA6oJ5tckRBREoucBpXJhM28kYBoBTwHC7oLnz5+X3/72t6rGg/13zp49K5988olaivHAAw9IoUKFfM0XNyTzFTcTI4GEEfAUIGz2hT2hf/WrX6naR6glEJ+pU6eGnvL1GBuSQYzwQYDjRMzQ5o6IvhYDEyOBmAl4ChCejJEveETdvHmz6pDGLGi44sUyDJPCvHnz5Mknn1Sumk2yi7aQAAk4E4hKgHArhuCrVq2q+nzgjRTfdYQJEyYI1qc5hW3btqlaEEbnEOrXry+9e/d2upTnSIAEDCAQlQAFNh4zwTUz9qWGOyDMT8q8CPbEiRNqHRfmJyFE2jPIAPY0gQTSnoDnRMSAa+bvv/9e4Jo54Acerpn//ve/K2+pflKEzy+4XsaCUXhIxQxbzEXCB+eLFCkS/P7yyy/7aRrTIgESyCYBTwEyzTUzZtQ+/fTTgn2op0+fLi1atBCsD2MgARJIPgKeAmSaa+YA4gYNGsjGjRuVeyC4DZo5c2Ygiv+TAAkkCQHPPiDTXDOHckVzcMqUKdKuXTvV2Yw1awwkQALJQ8BTgExzzeyEFgKEPqCBAwcqH/ZO1/CcXgJYiPrMM8+4roZH/OOPPy4VK1bUayhT95WApwCZ6JrZiRA2B3vrrbeconjOAAIQGMyYxxpCp3D06FHp27evYO0hQ/oQ8BQgDG1jAiJmQ3/77bdGuWZOn2JKjZwOGzZMufV2ys2iRYuUrzmnOJ5LXQKeAvT+++9Ljx49ZO/evca4Zk7d4mDOSCC9CHiOghUvXlwRgesdBhIgARKIJwHPGhC2v8AePHfeeafcd999gtXwmWcYDx48OJ428VkkQAJpQsBTgL788kv517/+pXC4dfKmkgBhbhEWtXoFNEnpF8yLEuNJIDIBTwFq06aNWuAZ+TGpE4s9raOZT0TvpqlT5syJPgKOAnTp0iXBJ1++fPos05QyZlXj4xUwakO/YF6UGE8CkQk4dkLD2ym23AgNWBH/3XffhZ7iMQmQAAnkiICjADk9ESvhe/bs6RTFcyRAAiQQEwHHJlhMT+JNJJADAtj2BRNeI20gh363V155RbAjJ0NqEKAApUY5Jn0u4HsOs+6bNWvmmpd///vfMmfOHHnkkUdcr2FEchGgACVXeaW0tXAyEKkG9Nlnn6V0/tMxc1H3AaUjHOaZBEggsQRca0CHDx+WmjVrBlOHE0K4vQk9F4jEIlUGEiABEsguAUcBgp+t9u3bhz0LHjEYSIAESCCeBBwFqGPHjoIPAwmQAAkkkoCjACUyQT6bBGIlgNn5WJs4f/5810dgAi0caTIkBwEKUHKUE620Caxbt07NFdq/f78rDyychntu+I1jMJ8ABcj8MqKF/yeAGhBm48+aNcuVCdbnwWccQ3IQ4DB8cpQTrSSBlCRAAUrJYmWmSCA5CLAJlhzlRCujJHD69Gm56667gi7EM9+G5R79+/eXJ598MnMUv2sgQAHSAJ1JJo7AhQsXZPz48VKqVCnHRNBBPWLECAqQIx3/T1KA/GfOFBNMoFKlSsplt1MyWE+GXS8ZzCDAkjCjHGiFTwSuXLkiWFYEH2VuAdt+jB07lkLlBiiO55O+ExoeN7FuDVVrBhLwIoA9hzCPCO6m3D779u2TCRMmeD2K8XEgkJQ1ILwg2Jjq7bffFhxjfghC4cKFBdXvVq1ayejRowVupRlIIDOBq6++OmINCLUjeALGO+YWqlWrJnDYwJAzAkknQBkZGWrTKlSTu3btqvauLlq0qOA7akG7du2S9957T+bOnSsrVqxQfsxyhoh3pxsBiM+aNWukcuXKrlkfOHCgdO/eXYoVK+Z4DZp6Xbp0kZYtWzrG8+T/CCSdAGGEA7Wc5cuXZ3GQGCjUcePGSdu2bdWMWdSEshPWr1+valZe90AI0ZeQOeCv68iRI+X48eOZo4LfMVIzceJE9Vc2eDLkAP7GUKsbOnRoyNnwQ9T84MMs0jXwZjtt2jTlVjv87v99w/YqCJGeAUcEO3fujHgNmjRvvvmm4EcXKfzhD3+QPHnyOF7yzTffKD9rkWzZtm2bwDlCJG8kaJKPGTNGypcv75jODz/8IGfOnImYH4gPAjZIixS+/vpr13VnKH/UxKMJ9erVc70Ma99at24d0RasfUOekzHksgvMSibDsWXnww8/7LktJ34QkydPli+++CJb2cPeRkuWLPG8Bz9+VNXhOTY04Ef45z//OfRUlmM0DfEjiBQKFSokmNMSKWA0J9D8dLquQIECcvbsWaeo4Llo0sEPEXs2uwX4UTt37pxbtDqP5vGpU6ciXuP1HIi71zKLaPLjxR8iefny5Yi2ej0DN+Nd8LJ36dKlcvvtt7umtWPHDlcxDdwEAcNvIhlD0gkQfvSoIbzxxhsReWNrT0w6i8bLacQHMZIESCBhBJKuCQY/9U2bNpWDBw/KQw89pPp40A7PnTu36gPavXu3zJ49WxYvXqyaaQkjxweTAAnkmEDS1YCQY7Tj+/XrJ6tWrXLsd0Db+5lnnpEWLVrkGJCOB6CfA7N1GzdurCP5sDQh9KhJ3nzzzWHndXz5/vvv1Uhn6dKldSQflia2BqlRo4brko+wixP4BU08eBTxahEk0IQcPTrpakDILbaMxQgX+iX27NkjqPWgIMqWLavay24jEzki5ePN6NTFvjboz9Adtm7dqjp+vTqY/bBz5cqVAvGpXr26H8lFTAMugvDO6d536Pz582rQJFkFKClrQBHfjBSIRMcjRj5Q09MdZs6cKR9++KERf2HhD6xJkybSt29f3Vjk1ltvVTsz3nLLLVptOXr0qKqdHjlyRKsdsSae9DOhY8047yMBEtBPgAKkvwxoAQmkLQEKUNoWPTNOAvoJUID0lwEtIIG0JUABStuiZ8ZJQD8BCpD+MqAFJJC2BChAaVv0zDgJ6CdAAdJfBrSABNKWACciGlj0mOGNfY1MWP6AbSWwbYfb9hZ+4sMWJFgxj/2fdAcsC7nhhhtct4Txyz6s2sc2JSbMDo8lzxSgWKjxHhIggbgQYBMsLhj5EBIggVgIUIBiocZ7SIAE4kKAAhQXjHwICZBALAQoQLFQ4z0kQAJxIUABigtGPoQESCAWAhSgWKjxHhIggbgQoADFBSMfQgIkEAsBClAs1HgPCZBAXAhQgOKCkQ8hARKIhQAFKBZqvIcESCAuBChAccEY/4eY4IUi/rnK+RNNceSrs3ywVjCS51ZTGEVT2hSgaCj5dM2WLVvk3nvvVb6v4Fa5YcOGsmzZMp9Sd0/mo48+Uo4fV69e7X5RAmMOHDggXbp0EbhbqlSpkjz11FOChal+B4jO888/r9w/wU00FgvPmTPHVzOwSBnup5zch8OPPJx1wlXQjTfemBz+4uEbnkE/Adu9ilWuXDmrfv36lu3Z1bJ9hlvt2rWz7Bfd2rBhgzYDbf/0VuXKlS37V2bZQuS7HbbfK6tixYqW7aTRWr58uWX/4K2qVata9g/Nd1teeuklK1euXNbYsWOtzz//3LLdBCkuthj4YsvOnTutmjVrqjQXLVoUlqa9Y4Fli47161//2tq4caP1j3/8w7L/iFkvvPBC2HWmfRHTDEpXe6ZPn65erLVr1wYRnDx50ipYsKD1xBNPBM/5ffDoo49atgdQbQI0bdo0y/6LbtkOKINZf//9960KFSpYds0oeM6Pg3r16llt2rQJJnXp0iX1R6Nnz57Bc4k6mDJlinXttddadq3LUYCeffZZq3Dhwta5c+eCJowePdoqXry4BRE3NbAJ5msF2j0xu+Yjr776qjRq1Ch4kf1Cif0CiS1EwXN+Htg1DuV1c9KkSX4mG5bWrFmzpFu3bmILTvA8mqnwiFuqVKngOT8O0AQMLQv7Ry22CKkmc6LTt2tdMmDAAFm8eLFjUnaNWdq2bSv58uULxnfs2FHgsBBupE0NFCBDSqZu3bpi1zbCrPnkk0+U2+nbbrst7LwfX06dOiW9e/eWl19+WfU5+JGmUxoQmlq1aikhxA/Mboqpvg388P0Ojz32mNjNGxk+fLjyFtunTx+5cOGC9OrVK+GmoH/nxRdflLx58zqmBS+6dhM+LC7wHX1oxgZTq2bpbpctAFbt2rUt2/WvZb/kvuOwxcf65S9/qdK1O8e1NMHsTl/L/sFZd999t2XvhGjZP3irefPmyhb0degIw4YNU+nbP2j1/4wZM3w1Y+/evSrdzH1A4IS+qdBg+65X1/71r38NPW3U8VXGKmMaG4baR/v27VUzY9WqVa5/9RKFCNX8d999VzZt2pSoJKJ6rt13IRhyhm/67du3S5UqVdR9dt+GPPfcczJkyBBp0KBBVM+Kx0WoES5cuFAmTJgg99xzj9iDBWL3z8mZM2dU8ygeacT6DIzK2R3kYbcHvttCFHbepC9sgplUGrYt9miYtGjRQjAkjyH4OnXq+Goh9n+2R3ekc+fOal9qCKDdMa5sQDPAHpHzzR7s/1yoUCG54447guKDxLt3765s8LNvA+Uyc+ZMGTx4sBI+u3Yq9qiYdOrUSf74xz/6xsQtodKlSwv27w4NJ06cUF/B0NTAGpBBJXPs2DFp1aqV6jjEnBsdG40fOnRIfvzxR/Vjww8uNAwaNEh1kgcEKTQuUceY82IPw4c9Hj+23LlzZ/mLH3ZRnL/Yw+6CeUAdOnQIezI6ejEXyB4iV3NvwiJ9/AImmft69u/frywI1Bx9NCfqpFgDihpVYi/Ey41OVvwVQ+ezDvFBDjHalJGREfbBaBjCO++8IwsWLFDHfv0DQQYPNMUCAU1E8GrSpEngVML/D4jg5s2bw9JCDTFPnjxSpkyZsPN+fwEnTE4MnSFtT1dQI3R+NlOznW+jeqTS2JipU6eqDkPMu8Hcl9CP/YPTSkZXJzQybY/uWFdddZXVo0cPCx2wYIGOebtZZmEejl8BHeJ33XWXVbJkSWvlypUWJo5OnjxZzb3BhES/glsntF1rVZNW+/fvb9k1acsWRst2X2RNnDjRL9NiSocTEWPCFv+bfvGLXygBsv+CZPm/devW8U8wG0/UKUAwEzOw7SUYigvEyO4js+z5LdnIQXwuxY/cboKp2dAoJ7vmY/3ud7+zMFvcr+AmQEgfI2OYeAjbID6wzU+RjoUB/YJlu87IG3QRwPovdKhigqbOgFEv2IJ1addcc41OU7KkbYuAaj7DkaQt1lniTTtBATKtRGgPCaQRAXZCp1FhM6skYBoBCpBpJUJ7SCCNCFCA0qiwmVUSMI0ABci0EqE9JJBGBChAaVTYzCoJmEaAAmRaidAeEkgjAhSgNCpsZpUETCNAATKtRGgPCaQRAQpQGhU2s0oCphGgAJlWIrSHBNKIAAUojQqbWSUB0whQgEwrEdpDAmlEgAKURoXNrJKAaQQoQKaVCO0hgTQiQAFKo8JmVknANAIUINNKhPaQQBoRoAClUWEzqyRgGgEKkGklQntIII0IUIDSqLCZVRIwjQAFyLQSoT0kkEYEKEBpVNjMKgmYRoACZFqJ0B4SSCMCFKA0KmxmlQRMI0ABMq1EaA8JpBEBClAaFTazSgKmEaAAmVYiSWBPrVq1JFeuXMEP3BPXrFlT+vXrJz/99JMxOZg3b56y8ejRo8bYREPCCZjvPDrcXn4zhECDBg1k0KBByhr4Ss/IyJDJkyfLd999J6tXrzbESpphOgEKkOklZKh9FSpUkB49eoRZd8MNN8hjjz0mu3btksqVK4fF8QsJOBFgE8yJCs/FRKB48eLqvjx58gTvP3jwoPTq1UvKlSsnJUqUkI4dO8qOHTuC8aNGjZK+ffsGv+Ng5cqV0rBhQzl+/Lg6P2bMGBkxYoTMnj1b6tWrJ0WKFJG2bdvK7t27VXzgn0WLFknr1q2lWLFiKh2kzWA2AdaAzC4fY627fPmynD9/Xtl37tw52b59u4wdO1batGkjFStWVOcvXrwoLVu2VP1C48aNkwIFCsj48eMFzbctW7ZI2bJlVW0JzbfQcOLECdmwYYNcunRJnUb84sWLJW/evNK7d28pXLiwjB49Wrp27Srr1q1T13z11Vdy//33y4MPPigDBgxQ1weaiKHP5rFZBChAZpVH0lizcOFCyZ8/f5i9pUqVkg8//DB47rXXXpOtW7eqfqGqVauq8xCkkiVLKgGZOnVq8Fqvg0OHDsm2bdukSpUq6lLLsmTw4MGqlnT99dfL0KFDpUmTJjJjxgwV3759ezlw4IDMnz/f69GM10iATTCN8JM56Tp16ggEBp9JkybJkCFDBE2vpk2bqloN8obaSaNGjSQgPjhXtGhRady4saxZswZfow7ly5cPig9uuummm9S9p0+fVv+jBtSpUyd1HPinW7dugUP+bygB1oAMLRjTzUInM4bdQwNECB3R06dPlxdeeEEJEfp+MofmzZtLdmo/uB/9R6EBQ/8IaAoeO3ZMMNSOGlhoQBOPwWwCrAGZXT5JZV2ZMmWkRo0a8vHHHyu7IRoQh8wBtZZADQbzidBXFBqyO28HTbBChQplSStQOwp9No/NIkABMqs8ktqaw4cPq87oatWqqXxAjNavXx8czcLJK1euyIoVK6R27drqmoIFCwruCw2bNm0K/ep5DBFDkxCjZ6Hh008/Df3KYwMJUIAMLJRkMAlD4K+//rr6oDmFEbBmzZrJzz//HGyaYTQKoWfPnmqiIoTm97//vezZsyc49I4RsZ07d8pLL72krpk2bZq88cYb6r7s/DN8+HBZsGCB/O1vfxPUfNBJjomRDIYTsEcTGEggWwTsZReW/VoHP7lz57bs5pd1zz33WMuXLw971meffWZVr15dXWvXVCy7VmQtWbIkeM3Zs2et7t27W4jDM3Ht3Llz1bE98qWu69Onj2XPCwreg4OlS5eqa2zxCp63Bcey+33UeXtOkmWLmjo+cuRI8BoemEUgF8wxXCNpXgoQsEVA8Kpl7kwOZA21Fnxy2nGMNFDDwlwkNM0YzCZAATK7fGgdCaQ0AfYBpXTxMnMkYDYBCpDZ5UPrSCClCVCAUrp4mTkSMJsABcjs8qF1JJDSBChAKV28zBwJmE2AAmR2+dA6EkhpAhSglC5eZo4EzCZAATK7fGgdCaQ0AQpQShcvM0cCZhOgAJldPrSOBFKaAAUopYuXmSMBswlQgMwuH1pHAilNgAKU0sXLzJGA2QQoQGaXD60jgZQmQAFK6eJl5kjAbAIUILPLh9aRQEoToACldPEycyRgNgEKkNnlQ+tIIKUJUIBSuniZORIwmwAFyOzyoXUkkNIEKEApXbzMHAmYTYACZHb50DoSSGkC/wXsnYGutATfAQAAAABJRU5ErkJggg==" /><!-- --></p>
+</div>
+<div id="multi-bias-e-values" class="section level2">
+<h2>Multi-bias E-values</h2>
+<p>We can also calculate multi-bias E-values, which are analogous to E-values for unmeasured confounding but take into account multiple biases. The multi-bias E-value describes the minimum value that all of the sensitivity parameters for each of the biases would have to take on for a given observed risk ratio to be compatible with a truly null risk ratio.</p>
+<p>To calculate a multi-bias evalue, we declare a set of biases as before, and then specify the observed risk ratio. For example, given the biases we have been working with and an observed risk ratio of 4, the multi-bias E-value is <code>round(summary(multi_evalue(biases, RR(4))), 2)</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">multi_evalue</span>(biases, <span class="dt">est =</span> <span class="kw">RR</span>(<span class="dv">4</span>))</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="co">#&gt; This multi-bias e-value refers simultaneously to parameters RR_AUc, RR_UcY, RR_UsY|A=1, RR_SUs|A=1, RR_YA*|a,S. (See documentation for details.)</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co">#&gt;                       point lower upper</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co">#&gt; RR                  4.00000    NA    NA</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co">#&gt; Multi-bias e-values 1.67513    NA    NA</span></span></code></pre></div>
+<p>Notice that we have specified that our estimate is a risk ratio using the <code>RR()</code> function. If we want to instead calculate a multi-bias E-value for an odds ratio or a hazard ratio, we must specify so with the appropriate function, as well as decide whether it’s reasonable to assume that the outcome is rare enough to use a risk ratio approximation. If not, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/biom.13197">other approximations</a> will be used.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># square-root approximation of the odds ratio</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">multi_evalue</span>(biases, <span class="dt">est =</span> <span class="kw">OR</span>(<span class="dv">4</span>, <span class="dt">rare =</span> <span class="ot">FALSE</span>))</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="co">#&gt; This multi-bias e-value refers simultaneously to parameters RR_AUc, RR_UcY, RR_UsY|A=1, RR_SUs|A=1, RR_YA*|a,S. (See documentation for details.)</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="co">#&gt;                        point lower upper</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co">#&gt; RR                  2.000000    NA    NA</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="co">#&gt; Multi-bias e-values 1.327958    NA    NA</span></span></code></pre></div>
+<p>To additionally calculate a multi-bias E-value for the confidence interval, we can include it with the <code>lo =</code> and <code>hi =</code> arguments (these will be assumed to be on the same scale as the point estimate):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># use verbose = FALSE to suppress message about parameters</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">multi_evalue</span>(biases, <span class="dt">est =</span> <span class="kw">RR</span>(<span class="dv">4</span>), <span class="dt">lo =</span> <span class="fl">2.5</span>, <span class="dt">hi =</span> <span class="dv">6</span>, <span class="dt">verbose =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="co">#&gt;                       point    lower upper</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="co">#&gt; RR                  4.00000 2.500000     6</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="co">#&gt; Multi-bias e-values 1.67513 1.435575    NA</span></span></code></pre></div>
+<p>The function can also accommodate protective estimates:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">multi_evalue</span>(biases, <span class="dt">est =</span> <span class="kw">RR</span>(<span class="fl">0.25</span>), <span class="dt">lo =</span> <span class="fl">0.17</span>, <span class="dt">hi =</span> <span class="fl">0.4</span>, <span class="dt">verbose =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="co">#&gt;                       point lower    upper</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="co">#&gt; RR                  0.25000  0.17 0.400000</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co">#&gt; Multi-bias e-values 1.67513    NA 1.435575</span></span></code></pre></div>
+<p>Finally, if we are calculating a multi-bias E-value for a point estimate and just want to output the single value, we can use the <code>summary()</code> function, which will also automatically suppress the message about the parameters:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">summary</span>(<span class="kw">multi_evalue</span>(biases, <span class="dt">est =</span> <span class="kw">RR</span>(<span class="dv">4</span>)))</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="co">#&gt; [1] 1.67513</span></span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
