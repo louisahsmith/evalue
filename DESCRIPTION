@@ -1,4 +1,4 @@
-Package: EValue
+Package: MEValue
 Type: Package
 Title: Sensitivity Analyses for Unmeasured Confounding or Selection Bias in Observational Studies and Meta-Analyses
 Version: 2.0.0
